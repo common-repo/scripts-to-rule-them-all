@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# script/console — thin stub; runs drop-ins from script/.console/*.sh via .harness
+set -euo pipefail
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$dir/.harness" console "$@"
