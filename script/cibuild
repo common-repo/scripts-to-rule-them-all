@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# script/cibuild — thin stub; runs drop-ins from script/.cibuild/*.sh via .harness
+set -euo pipefail
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$dir/.harness" cibuild "$@"

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# script/setup — thin stub; runs drop-ins from script/.setup/*.sh via .harness
+set -euo pipefail
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$dir/.harness" setup "$@"

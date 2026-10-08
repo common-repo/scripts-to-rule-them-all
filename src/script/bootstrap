@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# script/bootstrap — thin stub; runs drop-ins from script/.bootstrap/*.sh via .harness
+set -euo pipefail
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$dir/.harness" bootstrap "$@"

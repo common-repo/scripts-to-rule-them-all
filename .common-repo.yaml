@@ -1,3 +1,28 @@
-- repo:
-    url: https://github.com/common-repo/semantic-release
-    ref: v0.7.1
+# Local consumption — apply our own source files to this repo, with shared
+# dev tooling (CI, release, pre-commit) composed from the upstream template.
+- self:
+    - repo:
+        url: https://github.com/common-repo/upstream
+        ref: v2.2.1
+    - include:
+        - "src/**"
+    - rename:
+        - "^src/(.*)$": "$1"
+
+# Source API — what consumers inherit.
+# The thin stubs are re-included narrowly with `if-exists: preserve` so
+# consumers with bespoke scripts (e.g. an existing script/test) keep them
+# across re-propagations. Last-op-wins re-stamps only these paths.
+- include:
+    - "src/**"
+- rename:
+    - "^src/(.*)$": "$1"
+- include:
+    - "src/script/bootstrap"
+    - "src/script/setup"
+    - "src/script/update"
+    - "src/script/test"
+    - "src/script/cibuild"
+    - "src/script/server"
+    - "src/script/console"
+  if-exists: preserve
