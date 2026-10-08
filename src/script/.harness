@@ -17,9 +17,10 @@ RC_HARD=70
 RC_SOFT=75
 RC_SKIP=77
 
-# Deterministic glob expansion order (NN- prefixes assume byte sort)
+# Deterministic glob expansion order (NN- prefixes assume byte sort). Not
+# exported: bash applies the locale change on plain assignment, but child
+# processes of drop-ins keep the user's locale.
 LC_ALL=C
-export LC_ALL
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$HARNESS_DIR/.." && pwd)"
@@ -59,9 +60,16 @@ EOF
 die() { error "$*"; exit 2; }
 
 # Resolve the severity declared in a drop-in header: `# severity: soft|hard`.
-# Empty output means no declaration; the phase default applies.
+# Empty output means no declaration (or an invalid one, which warns); the
+# phase default applies.
 header_severity() {
-  sed -n 's/^[[:space:]]*#[[:space:]]*severity:[[:space:]]*//p' "$1" | head -n 1
+  local _sev
+  _sev="$(sed -n 's/^[[:space:]]*#[[:space:]]*severity:[[:space:]]*//p' "$1" | head -n 1)"
+  case "$_sev" in
+    soft|hard) printf '%s\n' "$_sev" ;;
+    "")        ;;
+    *)         warn "invalid severity '$_sev' in ${1##*/} (expected soft or hard); using phase default" ;;
+  esac
 }
 
 phase_default_severity() {

@@ -125,6 +125,10 @@ minor releases, removals/renames are majors):
 | `debug` | log to stderr only when `DEBUG=1` |
 | `pass`, `fail`, `soft_fail`, `skip` | outcome functions (see above) |
 
+Drop-in file names must not shadow stdlib function names (no
+`.test/info.sh` defining `info()`); stems are function names, and sourcing
+is ordered.
+
 Ambient context: `$HARNESS_PHASE` names the running phase; `$REPO_ROOT` is
 the repository root; harness logging goes to stderr, so **stdout belongs to
 drop-ins**.
@@ -138,7 +142,9 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
 - `--only` filters drop-ins. A pattern matches a stem exactly, either fully
   qualified (`30-lint`) or by its suffix without the `NN-` prefix (`lint`).
   Comma-separated or repeated. All matches run — it is a filter, not a
-  selector — and **zero matches is an error**.
+  selector — and **zero matches is an error**. Note that every *discovered*
+  drop-in must still pass the syntax check: a broken drop-in blocks even
+  filtered runs until it is fixed or removed.
 - `--list` prints the discovered drop-ins and their resolved severity
   without running anything.
 - Everything else passes through to each drop-in invoked.
@@ -165,6 +171,8 @@ human invoking them wants a thing to happen.
 - Bash ≥ 3.2 (stock macOS) through 5.x (Linux CI). Drop-ins may rely on the
   stdlib, `set -e` fail-fast semantics, and bash function names containing
   dashes (e.g. `30-lint()`).
+- The harness sets `LC_ALL=C` internally for deterministic ordering but does
+  not export it — drop-in child processes run in the user's locale.
 - Env values containing newlines do not propagate between drop-ins on
   bash 3.2 (an `export -p` round-trip limitation).
 - Exit status: 0 when everything passed or skipped, 1 on any failure,
