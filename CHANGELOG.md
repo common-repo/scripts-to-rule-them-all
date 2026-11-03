@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.1 - 2026-11-03
+#### Miscellaneous Chores
+- (**version**) v0.1.0 - (4d14f0e) - jathanism
+
+- - -
+
 ## v0.1.0 - 2026-11-03
 #### Features
 - (**common-repo**) update upstream to v2.3.0 - (d38b234) - jathanism
