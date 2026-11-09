@@ -13,10 +13,10 @@
 # The thin stubs are re-included narrowly with `if-exists: preserve` so
 # consumers with bespoke scripts (e.g. an existing script/test) keep them
 # across re-propagations. Last-op-wins re-stamps only these paths.
+# The `rename:` must come after both includes: an include that runs after
+# it re-adds the stubs under src/script/, where nothing renames them.
 - include:
     - "src/**"
-- rename:
-    - "^src/(.*)$": "$1"
 - include:
     - "src/script/bootstrap"
     - "src/script/setup"
@@ -26,3 +26,5 @@
     - "src/script/server"
     - "src/script/console"
   if-exists: preserve
+- rename:
+    - "^src/(.*)$": "$1"
