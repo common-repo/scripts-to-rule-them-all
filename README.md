@@ -163,7 +163,9 @@ one match fails loudly listing the candidates — disambiguate with `--only`.
 
 `bootstrap`, `setup`, `update`, `test`, and `cibuild` treat an empty
 drop-in directory as a silent no-op — adopting this upstream never breaks a
-repo that has no tests yet. `server` and `console` fail loudly because a
+repo that has no tests yet. Chaining still happens: `setup`/`update` with
+no drop-ins still run `script/bootstrap`, and `cibuild` with no drop-ins
+still runs `script/test`. `server` and `console` fail loudly because a
 human invoking them wants a thing to happen.
 
 ## Requirements and notes

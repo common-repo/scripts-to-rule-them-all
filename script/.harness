@@ -204,6 +204,11 @@ main() {
       exit 1
     fi
     debug "nothing to do: script/.$phase/ has no drop-ins"
+    # cibuild always finishes with the test script, even with no drop-ins
+    # of its own; hand over to it so its status and summary are the result.
+    if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
+      exec "$HARNESS_DIR/test" "${ORIGINAL_ARGS[@]}"
+    fi
     exit 0
   fi
 
