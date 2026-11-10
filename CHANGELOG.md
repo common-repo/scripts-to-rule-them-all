@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.2 - 2026-11-10
+#### Bug Fixes
+- run script/test from cibuild when script/.cibuild/ is empty - (f425865) - Jacob Alheid
+
+- - -
+
 ## v0.1.1 - 2026-11-03
 #### Miscellaneous Chores
 - (**version**) v0.1.0 - (4d14f0e) - jathanism
