@@ -32,18 +32,19 @@ empty.
 
 ## Usage
 
-Requires [common-repo](https://github.com/common-repo/common-repo) ≥ 0.37.0
-(additive `include:` is needed for this upstream's source API).
+Requires [common-repo](https://github.com/common-repo/common-repo) ≥ 0.38.4,
+the version this upstream is tested against (additive `include:` and
+`if-exists: preserve` are needed for its source API).
 
 Add to `.common-repo.yaml`:
 
 ```yaml
 - repo:
     url: https://github.com/common-repo/scripts-to-rule-them-all
-    ref: v0.1.0
+    ref: v0.1.3
 ```
 
-Then `cr diff` to preview and `cr apply` to write.
+Then `common-repo diff` to preview and `common-repo apply` to write.
 
 The stubs are re-included with `if-exists: preserve`: a consumer with a
 bespoke `script/test` (or any other stub name) keeps it across
@@ -152,6 +153,11 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
 `setup`/`update` forward their arguments to the `script/bootstrap` they
 chain; `cibuild` forwards to `script/test`.
 
+For `cibuild`, `--only` filters across both `script/.cibuild/` and
+`script/.test/`: `script/cibuild --only lint` runs a `lint` drop-in from
+either directory, `script/test` is skipped when nothing in `script/.test/`
+matches, and it is an error only when neither directory has a match.
+
 ## Server and console
 
 Provider slots, not run-alls: exactly one drop-in may run. Zero drop-ins
@@ -161,12 +167,13 @@ one match fails loudly listing the candidates — disambiguate with `--only`.
 
 ## Empty phases
 
-`bootstrap`, `setup`, `update`, `test`, and `cibuild` treat an empty
-drop-in directory as a silent no-op — adopting this upstream never breaks a
-repo that has no tests yet. Chaining still happens: `setup`/`update` with
-no drop-ins still run `script/bootstrap`, and `cibuild` with no drop-ins
-still runs `script/test`. `server` and `console` fail loudly because a
-human invoking them wants a thing to happen.
+`bootstrap`, `setup`, `update`, `test`, and `cibuild` run nothing of their
+own, and report no error, when their drop-in directory is empty — adopting
+this upstream never breaks a repo that has no tests yet. Chaining still
+happens: `setup`/`update` with no drop-ins still run `script/bootstrap`,
+and `cibuild` with no drop-ins still runs `script/test`. `server` and
+`console` fail loudly because a human invoking them wants a thing to
+happen.
 
 ## Requirements and notes
 
@@ -182,6 +189,23 @@ human invoking them wants a thing to happen.
 - This upstream is standalone: consume it directly; it composes no other
   upstreams. `upstream`, `semantic-release`, `conventional-commits`, and
   `pre-commit` are expected to adopt it in their `self:` blocks over time.
+
+## Developing this upstream
+
+This repository runs its own harness. The drop-ins under the repo-root
+`script/` are local only — consumers inherit `src/` and nothing else.
+
+- `script/test` runs `script/.test/10-harness.sh`: it builds throwaway
+  `script/` trees from `src/script` and checks exit statuses and output
+  for chaining, `--only`, empty phases and severity.
+- `script/cibuild` first runs `script/.cibuild/10-source-api.sh`, which
+  needs `common-repo` on `PATH`: it applies this checkout as a local-path
+  upstream into scratch consumers and checks that only `script/.harness`
+  and the seven stubs land, and that a consumer's own `script/test`
+  survives. It then runs `script/test`.
+
+The `CI Build` workflow runs `script/cibuild` with the latest common-repo
+release on every pull request and push to `main`.
 
 ## License
 
