@@ -83,6 +83,36 @@ is_provider_phase() {
   case "$1" in server|console) return 0 ;; *) return 1 ;; esac
 }
 
+# matches_only <stem> <pattern>...: exact on the full stem, or exact on the
+# suffix after the NN- prefix.
+matches_only() {
+  local _stem="$1" _pat
+  shift
+  for _pat in "$@"; do
+    if [[ "$_stem" == "$_pat" || "$_stem" == ??-"$_pat" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# phase_matches_only <phase> <pattern>...: true when any drop-in in
+# script/.<phase>/ matches one of the patterns.
+phase_matches_only() {
+  local _phase="$1" _f _stem _rc=1
+  shift
+  shopt -s nullglob
+  for _f in "$HARNESS_DIR/.$_phase"/*.sh; do
+    _stem="${_f##*/}"
+    if matches_only "${_stem%.sh}" "$@"; then
+      _rc=0
+      break
+    fi
+  done
+  shopt -u nullglob
+  return "$_rc"
+}
+
 main() {
   local phase="${1:-}"
   if [ -z "$phase" ]; then
@@ -151,20 +181,10 @@ main() {
   shopt -u nullglob
 
   # -- selection --------------------------------------------------------------
-  local selected=() i stem pat matched
+  local selected=() i stem
   for i in "${!DROP_STEMS[@]}"; do
     stem="${DROP_STEMS[$i]}"
-    if [ "${#only[@]}" -gt 0 ]; then
-      matched=0
-      for pat in "${only[@]}"; do
-        # Exact on the full stem, or exact on the suffix after NN-
-        if [[ "$stem" == "$pat" || "$stem" == ??-"$pat" ]]; then
-          matched=1
-          break
-        fi
-      done
-      [ "$matched" -eq 1 ] && selected+=("$i")
-    else
+    if [ "${#only[@]}" -eq 0 ] || matches_only "$stem" "${only[@]}"; then
       selected+=("$i")
     fi
   done
@@ -191,8 +211,24 @@ main() {
       ;;
   esac
 
-  if [ "${#only[@]}" -gt 0 ] && [ "${#selected[@]}" -eq 0 ]; then
-    error "--only matched no drop-ins in script/.$phase/"
+  # cibuild finishes with the test script, and forwards its arguments to
+  # it. `--only` therefore filters across both phases: the test script is
+  # skipped when the filter matches nothing in script/.test/, and matching
+  # nothing in script/.cibuild/ is fine as long as script/.test/ matches.
+  local chain_test=0
+  if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
+    chain_test=1
+    if [ "${#only[@]}" -gt 0 ] && ! phase_matches_only test "${only[@]}"; then
+      chain_test=0
+    fi
+  fi
+
+  if [ "${#only[@]}" -gt 0 ] && [ "${#selected[@]}" -eq 0 ] && [ "$chain_test" -eq 0 ]; then
+    if [ "$phase" = cibuild ]; then
+      error "--only matched no drop-ins in script/.cibuild/ or script/.test/"
+    else
+      error "--only matched no drop-ins in script/.$phase/"
+    fi
     [ "${#DROP_STEMS[@]}" -gt 0 ] && info "available: ${DROP_STEMS[*]}"
     exit 2
   fi
@@ -203,13 +239,10 @@ main() {
       error "no $phase drop-in found in script/.$phase/ — a platform upstream should provide one"
       exit 1
     fi
-    debug "nothing to do: script/.$phase/ has no drop-ins"
-    # cibuild always finishes with the test script, even with no drop-ins
-    # of its own; hand over to it so its status and summary are the result.
-    if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
-      exec "$HARNESS_DIR/test" "${ORIGINAL_ARGS[@]}"
-    fi
-    exit 0
+    debug "script/.$phase/ has no drop-ins"
+    # cibuild falls through: with nothing selected the steps below are
+    # no-ops until the test script is chained at the end.
+    [ "$chain_test" -eq 1 ] || exit 0
   fi
 
   if is_provider_phase "$phase" && [ "${#selected[@]}" -gt 1 ]; then
@@ -271,6 +304,7 @@ main() {
 
   print_summary() {
     local r
+    [ "${#RESULTS[@]}" -gt 0 ] || return 0
     HARNESS_TAG="[$phase]"
     info "summary:"
     for r in "${RESULTS[@]}"; do
@@ -314,8 +348,10 @@ main() {
   done
 
   # -- cibuild always finishes with the test script -----------------------------
-  if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
+  if [ "$chain_test" -eq 1 ]; then
     "$HARNESS_DIR/test" "${ORIGINAL_ARGS[@]}" || FAILED=1
+  elif [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
+    debug "skipping script/test: --only matched no drop-ins in script/.test/"
   fi
 
   print_summary
