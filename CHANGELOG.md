@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.3 - 2026-11-10
+#### Bug Fixes
+- rename source API stubs after the preserve include - (ba0ffe8) - Jacob Alheid
+
+- - -
+
 ## v0.1.2 - 2026-11-10
 #### Bug Fixes
 - run script/test from cibuild when script/.cibuild/ is empty - (f425865) - Jacob Alheid
