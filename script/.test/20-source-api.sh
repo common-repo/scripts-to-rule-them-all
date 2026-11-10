@@ -3,7 +3,7 @@
 # what lands. `common-repo validate` and `diff` only exercise the `self:`
 # block, so nothing else covers this. Not distributed: consumers inherit
 # src/ only.
-10-source-api() {
+20-source-api() {
   command -v common-repo >/dev/null 2>&1 || return $(fail "common-repo is not installed")
 
   local tmp failures=0 stub

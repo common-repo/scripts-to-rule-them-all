@@ -33,6 +33,9 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+    - uses: common-repo/setup-common-repo@887d2b31e6678fb650d1b1b6fb6097afa5528310
+      with:
+        version: latest
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
     - name: Run tests
       run: |

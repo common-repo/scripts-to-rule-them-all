@@ -8,6 +8,16 @@
         - "src/**"
     - rename:
         - "^src/(.*)$": "$1"
+    # The upstream's Test job runs script/test with no common-repo binary;
+    # add the install step ahead of it.
+    - include:
+        - ".github/ci-test-steps.yaml"
+    - yaml:
+        source: .github/ci-test-steps.yaml
+        dest: .github/workflows/ci.yaml
+        path: jobs.test.steps
+        array_mode: merge_by_key
+        position: start
 
 # Source API — what consumers inherit.
 # The thin stubs are re-included narrowly with `if-exists: preserve` so
