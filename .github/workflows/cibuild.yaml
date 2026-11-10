@@ -1,0 +1,25 @@
+# Regression checks for this template, run through its own harness:
+# script/cibuild applies the source API to scratch consumers
+# (script/.cibuild/), then runs the harness tests (script/.test/).
+name: CI Build
+on:
+  pull_request: null
+  push:
+    branches:
+    - main
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+jobs:
+  cibuild:
+    name: script/cibuild
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    - uses: common-repo/setup-common-repo@887d2b31e6678fb650d1b1b6fb6097afa5528310
+      with:
+        version: latest
+    - name: Run script/cibuild
+      run: script/cibuild
