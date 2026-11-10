@@ -195,17 +195,20 @@ happen.
 This repository runs its own harness. The drop-ins under the repo-root
 `script/` are local only — consumers inherit `src/` and nothing else.
 
-- `script/test` runs `script/.test/10-harness.sh`: it builds throwaway
-  `script/` trees from `src/script` and checks exit statuses and output
-  for chaining, `--only`, empty phases and severity.
-- `script/cibuild` first runs `script/.cibuild/10-source-api.sh`, which
-  needs `common-repo` on `PATH`: it applies this checkout as a local-path
-  upstream into scratch consumers and checks that only `script/.harness`
-  and the seven stubs land, and that a consumer's own `script/test`
-  survives. It then runs `script/test`.
+`script/test` runs two drop-ins from `script/.test/`:
 
-The `CI Build` workflow runs `script/cibuild` with the latest common-repo
-release on every pull request and push to `main`.
+- `10-harness.sh` builds throwaway `script/` trees from `src/script` and
+  checks exit statuses and output for chaining, `--only`, empty phases and
+  severity.
+- `20-source-api.sh` needs `common-repo` on `PATH`. It applies this
+  checkout as a local-path upstream into scratch consumers and checks that
+  only `script/.harness` and the seven stubs land, and that a consumer's
+  own `script/test` survives.
+
+CI runs `script/test` in the `Test` job of `.github/workflows/ci.yaml`.
+That file is managed by `common-repo/upstream`; the step that installs the
+latest common-repo release is merged into the job from
+`.github/ci-test-steps.yaml` by the `self:` block in `.common-repo.yaml`.
 
 ## License
 

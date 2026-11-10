@@ -1,0 +1,7 @@
+# Merged into the Test job of the upstream-managed .github/workflows/ci.yaml
+# by the `self:` block in .common-repo.yaml. script/test applies this repo
+# to scratch consumers (script/.test/20-source-api.sh), which needs the
+# common-repo binary.
+- uses: common-repo/setup-common-repo@887d2b31e6678fb650d1b1b6fb6097afa5528310
+  with:
+    version: latest
