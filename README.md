@@ -41,7 +41,7 @@ Add to `.common-repo.yaml`:
 ```yaml
 - repo:
     url: https://github.com/common-repo/scripts-to-rule-them-all
-    ref: v0.1.3
+    ref: v0.1.4
 ```
 
 Then `common-repo diff` to preview and `common-repo apply` to write.
