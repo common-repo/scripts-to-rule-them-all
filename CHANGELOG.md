@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.4 - 2026-11-10
+#### Bug Fixes
+- make cibuild --only filter across cibuild and test drop-ins - (1b52bf7) - Jacob Alheid
+#### Documentation
+- require common-repo 0.38.4 and describe the regression checks - (1ce28ca) - Jacob Alheid
+#### Continuous Integration
+- run the source API check in the Test job - (6ed7c4a) - Jacob Alheid
+- check the source API against scratch consumers - (82af7e6) - Jacob Alheid
+
+- - -
+
 ## v0.1.3 - 2026-11-10
 #### Bug Fixes
 - rename source API stubs after the preserve include - (ba0ffe8) - Jacob Alheid
