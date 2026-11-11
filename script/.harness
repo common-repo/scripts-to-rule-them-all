@@ -233,6 +233,10 @@ main() {
       [ -n "$sev" ] || sev="$(phase_default_severity "$phase") (default)"
       printf '  %-24s %-16s %s\n' "$stem" "$sev" "${DROP_FILES[$i]}"
     done
+    # cibuild also runs the test script, so list what that would run.
+    if [ "$chain_test" -eq 1 ]; then
+      "$HARNESS_DIR/test" "${ORIGINAL_ARGS[@]}" || exit $?
+    fi
     exit 0
   fi
 

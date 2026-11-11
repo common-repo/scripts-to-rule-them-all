@@ -81,6 +81,12 @@
   check "--only matching both runs both" 0 "build ran" "ok ran"
   run cibuild --only nope
   check "--only matching neither is a usage error" 2 "script/.cibuild/ or script/.test/" "!ran"
+  run cibuild --list --only ok
+  check "cibuild --list shows the test drop-ins it chains" 0 "10-ok" "!10-build" "!ran"
+  run cibuild --list
+  check "cibuild --list shows both phases" 0 "10-build" "10-ok" "!ran"
+  run cibuild --list --only build
+  check "cibuild --list skips test when --only matches no test drop-in" 0 "10-build" "!10-ok"
 
   # -- setup/update chain to bootstrap --------------------------------------
   fixture bootstrap
