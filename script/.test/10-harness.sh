@@ -84,9 +84,32 @@
 
   # -- setup/update chain to bootstrap --------------------------------------
   fixture bootstrap
-  dropin bootstrap 10-deps 'info "deps ran"'
+  # shellcheck disable=SC2016  # expands in the drop-in
+  dropin bootstrap 10-deps 'info "deps ran $*"'
   run setup;  check "empty setup still bootstraps" 0 "deps ran"
   run update; check "empty update still bootstraps" 0 "deps ran"
+  dropin setup 20-foo 'info "foo ran"'
+  run setup --only foo
+  check "setup --only runs a full bootstrap, then the match" 0 "deps ran" "foo ran"
+  run setup --only foo -- extra
+  check "setup passes passthrough args to bootstrap" 0 "deps ran extra" "foo ran"
+
+  # -- --list honours --only ---------------------------------------------------
+  fixture list
+  dropin test 10-ok ':'
+  dropin test 20-lint ':'
+  run test --list --only lint
+  check "--list shows only --only matches" 0 "20-lint" "!10-ok"
+
+  # -- drop-in exports cannot change harness state -------------------------------
+  fixture state
+  dropin test 10-bad 'false'
+  dropin test 20-clobber 'export FAILED=0 phase=bogus stem=bogus SHARED=yes'
+  # shellcheck disable=SC2016  # expands in the drop-in
+  dropin test 30-after 'info "after saw SHARED=$SHARED"'
+  run test
+  check "exported harness variables are not re-imported" 1 \
+    "after saw SHARED=yes" "FAIL   10-bad" "pass   20-clobber" "!bogus"
 
   # -- severity -------------------------------------------------------------
   fixture severity

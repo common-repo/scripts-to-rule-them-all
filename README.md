@@ -80,7 +80,9 @@ Rules:
   are visible to later drop-ins in the same phase. Non-exported and unset
   variables do not propagate. Env does not cross phase boundaries — chained
   phases are separate `script/` invocations; use files for cross-phase
-  state.
+  state. Exports of the harness's own variables (such as `i`, `stem`,
+  `FAILED`, `RESULTS`, `REPO_ROOT`; listed in `HARNESS_STATE_VARS` in
+  `.harness`) are dropped, so give shared variables distinct names.
 - **Use `local`** inside the function for internal variables.
 - **Don't rely on the working directory.** Drop-ins start at the repo root.
 - **Tolerate unknown arguments.** Everything after the harness flags is
@@ -147,12 +149,13 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
   (`--only ''`, `--only=`, `--only ,`). Note that every *discovered*
   drop-in must still pass the syntax check: a broken drop-in blocks even
   filtered runs until it is fixed or removed.
-- `--list` prints the discovered drop-ins and their resolved severity
-  without running anything.
+- `--list` prints the drop-ins `--only` selects (all of them without
+  `--only`) and their resolved severity, without running anything.
 - Everything else passes through to each drop-in invoked.
 
-`setup`/`update` forward their arguments to the `script/bootstrap` they
-chain; `cibuild` forwards to `script/test`.
+`setup`/`update` run the full `script/bootstrap` they chain and forward
+only the passthrough arguments to it (`--only` names their own drop-ins);
+`cibuild` forwards all its arguments to `script/test`.
 
 For `cibuild`, `--only` filters across both `script/.cibuild/` and
 `script/.test/`: `script/cibuild --only lint` runs a `lint` drop-in from

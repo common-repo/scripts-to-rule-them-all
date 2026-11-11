@@ -193,7 +193,7 @@ main() {
 
   if [ "$list" -eq 1 ]; then
     local sev
-    for i in "${!DROP_STEMS[@]}"; do
+    for i in "${selected[@]}"; do
       stem="${DROP_STEMS[$i]}"
       sev="$(header_severity "${DROP_FILES[$i]}")"
       [ -n "$sev" ] || sev="$(phase_default_severity "$phase") (default)"
@@ -204,11 +204,12 @@ main() {
 
   # -- cross-phase chaining (via the scripts, never the drop-ins directly) -----
   # Runs before empty-phase handling so `update` still bootstraps even when
-  # script/.update/ has no drop-ins of its own.
+  # script/.update/ has no drop-ins of its own. `--only` names this phase's
+  # drop-ins, so bootstrap runs in full and gets only the passthrough args.
   case "$phase" in
     setup|update)
       if [ -x "$HARNESS_DIR/bootstrap" ]; then
-        "$HARNESS_DIR/bootstrap" "${ORIGINAL_ARGS[@]}" || exit $?
+        "$HARNESS_DIR/bootstrap" -- "${passthrough[@]}" || exit $?
       fi
       ;;
   esac
@@ -278,13 +279,15 @@ main() {
   # (if/||/&& contexts) behave as usual under set -e. Exported variables
   # are the sharing channel: the subshell's final environment is captured
   # on exit (EXIT trap) and re-sourced by the harness, so later drop-ins
-  # see it. Unset and non-exported variables do not propagate. Drop-ins
-  # run from the repo root; stdout/stderr pass straight through.
+  # see it. Unset and non-exported variables do not propagate. Exports of
+  # the harness's own variables are dropped, so a drop-in cannot change
+  # its loop or results. Drop-ins run from the repo root; stdout/stderr
+  # pass straight through.
   invoke() {
     local _envf _rc
     _envf="$(mktemp "${TMPDIR:-/tmp}/stra-env.XXXXXX")"
     (
-      trap 'export -p >"$_envf"' EXIT
+      trap 'export -n $HARNESS_STATE_VARS; export -p >"$_envf"' EXIT
       set -e
       set -o pipefail
       cd "$REPO_ROOT"
@@ -315,6 +318,10 @@ main() {
   }
 
   local rc sev
+  HARNESS_STATE_VARS="phase only passthrough list f stem selected i sev rc r
+    chain_test _envf _rc _parts _p _got _rhs ORIGINAL_ARGS HARNESS_PHASE
+    HARNESS_TAG HARNESS_DIR REPO_ROOT DROP_FILES DROP_STEMS RESULTS FAILED
+    RC_PASS RC_HARD RC_SOFT RC_SKIP HARNESS_STATE_VARS"
   RESULTS=()
   FAILED=0
   for i in "${selected[@]}"; do
