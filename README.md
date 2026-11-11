@@ -103,6 +103,17 @@ failure continues. Override the default per drop-in with a header:
 # severity: hard
 ```
 
+Declare the tools a drop-in needs with a header:
+
+```bash
+# requires: terraform tflint
+```
+
+When one of them isn't on `PATH`, a full run skips the drop-in, and a run
+that selects it with `--only` fails, naming the tool. `--list` checks
+nothing. A wrapper such as `script/lint` (`.harness test --only lint`)
+therefore fails without its tools, while `script/test` skips them.
+
 For runtime control, use the outcome functions — **explicit outcomes
 override the declared severity**:
 

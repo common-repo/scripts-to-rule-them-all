@@ -72,6 +72,16 @@ header_severity() {
   esac
 }
 
+# Print the first tool named in a drop-in's `# requires: tool...` header
+# that isn't on PATH; empty output means every tool is there.
+missing_tool() {
+  local _req _t
+  _req="$(sed -n 's/^[[:space:]]*#[[:space:]]*requires:[[:space:]]*//p' "$1" | head -n 1)"
+  for _t in $_req; do
+    command -v "$_t" >/dev/null 2>&1 || { printf '%s\n' "$_t"; return 0; }
+  done
+}
+
 phase_default_severity() {
   case "$1" in
     test|cibuild) echo soft ;;
@@ -320,7 +330,7 @@ main() {
   }
 
   local rc sev
-  HARNESS_STATE_VARS="phase only passthrough list f stem selected i sev rc r
+  HARNESS_STATE_VARS="phase only passthrough list f stem selected i sev rc r missing
     chain_test _envf _rc _parts _p _got _rhs ORIGINAL_ARGS HARNESS_PHASE
     HARNESS_TAG HARNESS_DIR REPO_ROOT DROP_FILES DROP_STEMS RESULTS FAILED
     RC_PASS RC_HARD RC_SOFT RC_SKIP HARNESS_STATE_VARS"
@@ -329,9 +339,19 @@ main() {
   for i in "${selected[@]}"; do
     stem="${DROP_STEMS[$i]}"
     HARNESS_TAG="[$phase] $stem"
-    info "running"
-    invoke "$stem" "${passthrough[@]}"
-    rc=$?
+    # A missing required tool skips the drop-in, unless --only selected
+    # it: then the caller asked for this check, so it fails.
+    missing="$(missing_tool "${DROP_FILES[$i]}")"
+    if [ -z "$missing" ]; then
+      info "running"
+      invoke "$stem" "${passthrough[@]}"
+      rc=$?
+    elif [ "${#only[@]}" -gt 0 ]; then
+      error "requires $missing, which is not on PATH (run script/bootstrap)"
+      rc=1
+    else
+      rc="$(skip "requires $missing, which is not on PATH")"
+    fi
     set +e
 
     if [ "$rc" -eq "$RC_PASS" ]; then
