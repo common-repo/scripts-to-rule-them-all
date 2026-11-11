@@ -93,6 +93,8 @@
   check "setup --only runs a full bootstrap, then the match" 0 "deps ran" "foo ran"
   run setup --only foo -- extra
   check "setup passes passthrough args to bootstrap" 0 "deps ran extra" "foo ran"
+  run setup --only nope
+  check "setup --only with no match fails before bootstrap" 2 "!deps ran"
 
   # -- --list honours --only ---------------------------------------------------
   fixture list
@@ -100,6 +102,11 @@
   dropin test 20-lint ':'
   run test --list --only lint
   check "--list shows only --only matches" 0 "20-lint" "!10-ok"
+  run test --list --only nope
+  check "--list with no match is a usage error" 2 "matched no drop-ins" "!20-lint  "
+  dropin cibuild 10-build ':'
+  run cibuild --list --only ok
+  check "cibuild --list accepts a match in script/.test/ only" 0 "!10-build"
 
   # -- drop-in exports cannot change harness state -------------------------------
   fixture state

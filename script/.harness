@@ -191,6 +191,30 @@ main() {
     fi
   done
 
+  # cibuild finishes with the test script, and forwards its arguments to
+  # it. `--only` therefore filters across both phases: the test script is
+  # skipped when the filter matches nothing in script/.test/, and matching
+  # nothing in script/.cibuild/ is fine as long as script/.test/ matches.
+  # The zero-match check comes before --list and chaining, so a filter
+  # that matches nothing fails without listing or running anything.
+  local chain_test=0
+  if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
+    chain_test=1
+    if [ "${#only[@]}" -gt 0 ] && ! phase_matches_only test "${only[@]}"; then
+      chain_test=0
+    fi
+  fi
+
+  if [ "${#only[@]}" -gt 0 ] && [ "${#selected[@]}" -eq 0 ] && [ "$chain_test" -eq 0 ]; then
+    if [ "$phase" = cibuild ]; then
+      error "--only matched no drop-ins in script/.cibuild/ or script/.test/"
+    else
+      error "--only matched no drop-ins in script/.$phase/"
+    fi
+    [ "${#DROP_STEMS[@]}" -gt 0 ] && info "available: ${DROP_STEMS[*]}"
+    exit 2
+  fi
+
   if [ "$list" -eq 1 ]; then
     local sev
     for i in "${selected[@]}"; do
@@ -213,28 +237,6 @@ main() {
       fi
       ;;
   esac
-
-  # cibuild finishes with the test script, and forwards its arguments to
-  # it. `--only` therefore filters across both phases: the test script is
-  # skipped when the filter matches nothing in script/.test/, and matching
-  # nothing in script/.cibuild/ is fine as long as script/.test/ matches.
-  local chain_test=0
-  if [ "$phase" = cibuild ] && [ -x "$HARNESS_DIR/test" ]; then
-    chain_test=1
-    if [ "${#only[@]}" -gt 0 ] && ! phase_matches_only test "${only[@]}"; then
-      chain_test=0
-    fi
-  fi
-
-  if [ "${#only[@]}" -gt 0 ] && [ "${#selected[@]}" -eq 0 ] && [ "$chain_test" -eq 0 ]; then
-    if [ "$phase" = cibuild ]; then
-      error "--only matched no drop-ins in script/.cibuild/ or script/.test/"
-    else
-      error "--only matched no drop-ins in script/.$phase/"
-    fi
-    [ "${#DROP_STEMS[@]}" -gt 0 ] && info "available: ${DROP_STEMS[*]}"
-    exit 2
-  fi
 
   # -- empty phase semantics ---------------------------------------------------
   if [ "${#DROP_FILES[@]}" -eq 0 ]; then
