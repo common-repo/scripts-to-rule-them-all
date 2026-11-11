@@ -127,6 +127,26 @@
   dropin bootstrap 20-after 'info "after ran"'
   run bootstrap; check "hard failure stops the phase" 1 "!after ran"
 
+  # -- required tools -------------------------------------------------------
+  fixture requires
+  dropin test 10-ok ':'
+  {
+    echo '# requires: sh stra-missing-tool'
+    echo '20-lint() { info "lint ran"; }'
+  } >"$S/.test/20-lint.sh"
+  run test
+  check "a missing required tool skips the drop-in" 0 \
+    "skip   20-lint" "requires stra-missing-tool" "!lint ran"
+  run test --only lint
+  check "--only fails a drop-in whose tool is missing" 1 \
+    "FAIL   20-lint" "requires stra-missing-tool" "!lint ran"
+  run test --list --only lint
+  check "--list does not check required tools" 0 "20-lint" "!stra-missing-tool"
+  echo '# requires: sh' >"$S/.test/20-lint.sh"
+  echo '20-lint() { info "lint ran"; }' >>"$S/.test/20-lint.sh"
+  run test --only lint
+  check "a drop-in runs when its tools are on PATH" 0 "lint ran"
+
   rm -rf "$tmp"
   [ "$failures" -eq 0 ] || return $(fail "$failures harness regression check(s) failed")
 }
