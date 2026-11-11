@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.5 - 2026-11-11
+#### Bug Fixes
+- keep --only to its own phase and drop-in exports out of harness state - (a0e8acd) - Devin AI, *Devin AI*
+- reject an empty --only pattern instead of running every drop-in - (280a188) - Devin AI, *Devin AI*
+
+- - -
+
 ## v0.1.4 - 2026-11-10
 #### Bug Fixes
 - make cibuild --only filter across cibuild and test drop-ins - (1b52bf7) - Jacob Alheid
