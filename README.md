@@ -150,7 +150,8 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
   drop-in must still pass the syntax check: a broken drop-in blocks even
   filtered runs until it is fixed or removed.
 - `--list` prints the drop-ins `--only` selects (all of them without
-  `--only`) and their resolved severity, without running anything.
+  `--only`) and their resolved severity, without running anything. A
+  filter that matches nothing is an error here too.
 - Everything else passes through to each drop-in invoked.
 
 `setup`/`update` run the full `script/bootstrap` they chain and forward
