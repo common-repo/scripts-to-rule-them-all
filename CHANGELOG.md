@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.2.0 - 2026-11-11
+#### Features
+- skip or fail drop-ins by their # requires: header - (3059941) - Devin AI, *Devin AI*
+#### Bug Fixes
+- fail --list when --only matches nothing - (86b5ff0) - Devin AI, *Devin AI*
+
+- - -
+
 ## v0.1.5 - 2026-11-11
 #### Bug Fixes
 - keep --only to its own phase and drop-in exports out of harness state - (a0e8acd) - Devin AI, *Devin AI*
