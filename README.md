@@ -162,7 +162,8 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
   filtered runs until it is fixed or removed.
 - `--list` prints the drop-ins `--only` selects (all of them without
   `--only`) and their resolved severity, without running anything. A
-  filter that matches nothing is an error here too.
+  filter that matches nothing is an error here too. `cibuild --list` also
+  lists the `script/.test/` drop-ins it would run through `script/test`.
 - Everything else passes through to each drop-in invoked.
 
 `setup`/`update` run the full `script/bootstrap` they chain and forward
