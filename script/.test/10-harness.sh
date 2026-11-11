@@ -51,6 +51,9 @@
   [ -z "$out" ] || { failures=$((failures + 1)); error "not ok: empty cibuild printed output"; }
   run server;    check "empty provider phase fails" 1 "no server drop-in"
   run test --only nope; check "--only with no match is a usage error" 2
+  run test --only '';  check "--only with an empty pattern is a usage error" 2 "non-empty pattern"
+  run test --only=;    check "--only= with an empty pattern is a usage error" 2 "non-empty pattern"
+  run test --only ,;   check "--only with only commas is a usage error" 2 "non-empty pattern"
 
   # -- cibuild chains to test (issue #4) ------------------------------------
   fixture chain
