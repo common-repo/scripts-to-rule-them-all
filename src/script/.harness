@@ -137,19 +137,21 @@ main() {
     case "$1" in
       --only)
         [ $# -ge 2 ] || die "--only requires an argument"
-        local _parts _p
+        local _parts _p _got=0
         IFS=',' read -r -a _parts <<<"$2"
         for _p in "${_parts[@]}"; do
-          [ -n "$_p" ] && only+=("$_p")
+          [ -n "$_p" ] && only+=("$_p") && _got=1
         done
+        [ "$_got" -eq 1 ] || die "--only requires a non-empty pattern"
         shift 2
         ;;
       --only=*)
-        local _rhs="${1#--only=}" _parts _p
+        local _rhs="${1#--only=}" _parts _p _got=0
         IFS=',' read -r -a _parts <<<"$_rhs"
         for _p in "${_parts[@]}"; do
-          [ -n "$_p" ] && only+=("$_p")
+          [ -n "$_p" ] && only+=("$_p") && _got=1
         done
+        [ "$_got" -eq 1 ] || die "--only requires a non-empty pattern"
         shift
         ;;
       --list)

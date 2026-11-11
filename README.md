@@ -143,7 +143,8 @@ script/<phase> [--only <pattern>[,<pattern>...]] [--list] [--] [args...]
 - `--only` filters drop-ins. A pattern matches a stem exactly, either fully
   qualified (`30-lint`) or by its suffix without the `NN-` prefix (`lint`).
   Comma-separated or repeated. All matches run — it is a filter, not a
-  selector — and **zero matches is an error**. Note that every *discovered*
+  selector — and **zero matches is an error**, as is an empty pattern
+  (`--only ''`, `--only=`, `--only ,`). Note that every *discovered*
   drop-in must still pass the syntax check: a broken drop-in blocks even
   filtered runs until it is fixed or removed.
 - `--list` prints the discovered drop-ins and their resolved severity
